@@ -1,0 +1,6 @@
+@warehouseRouter_HostAddress = http://localhost:5228
+
+GET {{warehouseRouter_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
