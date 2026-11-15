@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace warehouseRouter.DTOs
+namespace warehouseRouter.Warehouse.DTOs
 {
     public class UpdateWarehouseDTO
     {

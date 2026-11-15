@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using warehouseRouter.Data;
+using warehouseRouter.Warehouse.Data;
+using warehouseRouter.Warehouse.Interfaces;
+using warehouseRouter.Warehouse.Repositories;
+using warehouseRouter.Warehouse.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
@@ -11,7 +14,8 @@ builder.Services.AddControllers();
 builder.Services.AddCors(opt => opt.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 builder.Services.AddDbContext<WarehouseDbContext>(opt => 
     opt.UseInMemoryDatabase("warehouseDbContext"));
-    builder.Services.AddScoped<warehouseRouter.Services.WarehouseService>();
+    builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+    builder.Services.AddScoped<IwarehouseServices, WarehouseService>();
 
 var app = builder.Build();
 app.UseCors();

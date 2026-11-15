@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using warehouseRouter.Models;
+using warehouseRouter.Warehouse.Models;
 
-namespace warehouseRouter.Data
+namespace warehouseRouter.Warehouse.Data
 {
     public class WarehouseDbContext : DbContext
     {

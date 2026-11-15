@@ -1,35 +1,34 @@
 using Microsoft.AspNetCore.Mvc;
-using warehouseRouter.Interfaces;
-using warehouseRouter.Repositories;
-using warehouseRouter.Models;
-using warehouseRouter.Services;
-using warehouseRouter.DTOs;
-using Microsoft.AspNetCore.Http.HttpResults;
-using warehouseRouter.Data;
+using warehouseRouter.Warehouse.Interfaces;
+using warehouseRouter.Warehouse.Repositories;
+using warehouseRouter.Warehouse.Models;
+using warehouseRouter.Warehouse.Services;
+using warehouseRouter.Warehouse.DTOs;
+using warehouseRouter.Warehouse.Data;
 
-namespace warehouseRouter.Controllers
+namespace warehouseRouter.Warehouse.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
 
     public class WarehouseController : ControllerBase
     {
-       private readonly  WarehouseService _warehouseService;
+        private readonly IwarehouseServices _warehouseService;
 
-       public WarehouseController(WarehouseService warehouseService)
+        public WarehouseController(IwarehouseServices warehouseService)
         {
             _warehouseService = warehouseService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<WarehouseBranchDirectory>>> GetAllAsync()
-        => await _warehouseService.GetAllAysnc();
+        public async Task<ActionResult<List<WarehouseDirectory>>> GetAllAsync()
+        => await _warehouseService.GetAllAsync();
 
         [HttpGet("{Id}")]
         public async Task<ActionResult<WarehouseDirectory>> GetByIdAsync(Guid Id)
         {
             var warehouse = await _warehouseService.GetByIdAsync(Id);
-            if(warehouse == null)
+            if (warehouse == null)
             {
                 return NotFound();
             }
@@ -51,7 +50,7 @@ namespace warehouseRouter.Controllers
             }
 
             var newWarehouse = new WarehouseDirectory
-             {
+            {
                 Email = request.Warehouse.Email,
                 PasswordHash = request.Warehouse.PasswordHash
             };
@@ -65,26 +64,26 @@ namespace warehouseRouter.Controllers
 
             return CreatedAtAction(
                 nameof(GetByIdAsync),
-                new { Id = newWarehouse.Id},
+                new { Id = newWarehouse.Id },
                 newWarehouse);
         }
 
         [HttpPut("warehouse/{Id}")]
         public async Task<ActionResult<WarehouseDirectory>> UpdateWarehouseAsync(Guid Id, UpdateWarehouseDTO dto)
         {
-            if (dto == null)
-            return BadRequest();
+            var toUpdateWarehouse = await _warehouseService.UpdateWarehouseAsync(Id, dto);
+            if (toUpdateWarehouse == null)
+                return NotFound();
 
-            await _warehouseService.UpdateWarehouseAsync(Id, dto);
-            
-            return Ok(dto);    
+            return Ok(toUpdateWarehouse);
+
         }
 
         [HttpPut("branches/{Id}")]
         public async Task<ActionResult<WarehouseBranchDirectory>> UpdateBranchAsync(Guid Id, UpdateWarehouseBranchDTO branchUpdate)
         {
-            if(branchUpdate == null)
-            return BadRequest();
+            if (branchUpdate == null)
+                return BadRequest();
 
             await _warehouseService.UpdateBranchAsync(Id, branchUpdate);
 

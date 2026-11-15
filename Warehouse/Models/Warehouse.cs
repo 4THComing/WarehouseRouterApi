@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-namespace warehouseRouter.Models
+namespace warehouseRouter.Warehouse.Models
 {
     public class WarehouseDirectory
     {
