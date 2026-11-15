@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using warehouseRouter.Warehouse.Data;
 using warehouseRouter.Warehouse.Interfaces;
+using warehouseRouter.Warehouse.Models;
 using warehouseRouter.Warehouse.Repositories;
 using warehouseRouter.Warehouse.Services;
 
@@ -16,6 +18,7 @@ builder.Services.AddDbContext<WarehouseDbContext>(opt =>
     opt.UseInMemoryDatabase("warehouseDbContext"));
     builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
     builder.Services.AddScoped<IwarehouseServices, WarehouseService>();
+builder.Services.AddScoped<IPasswordHasher<WarehouseDirectory>, PasswordHasher<WarehouseDirectory>>();
 
 var app = builder.Build();
 app.UseCors();
@@ -32,5 +35,4 @@ app.MapControllers();
 ;
 
 app.Run();
-
 

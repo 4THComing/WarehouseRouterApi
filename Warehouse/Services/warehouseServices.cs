@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using warehouseRouter.Warehouse.Models;
 using warehouseRouter.Warehouse.DTOs;
 using warehouseRouter.Warehouse.Interfaces;
@@ -6,140 +7,86 @@ namespace warehouseRouter.Warehouse.Services
 {
     public class WarehouseService : IwarehouseServices
     {
-
         private readonly IWarehouseRepository _warehouseRepository;
+        private readonly IPasswordHasher<WarehouseDirectory> _passwordHasher;
 
-        public WarehouseService(IWarehouseRepository warehouseRepository )
+        public WarehouseService(
+            IWarehouseRepository warehouseRepository,
+            IPasswordHasher<WarehouseDirectory> passwordHasher)
         {
             _warehouseRepository = warehouseRepository;
+            _passwordHasher = passwordHasher;
         }
 
-        public Dictionary<WarehouseDirectory, List<WarehouseBranchDirectory>> warehouses = new();
-
-        private readonly HashSet<Guid> warehouseIds = new();
-        private readonly HashSet<Guid> warehouseBranchIds = new();
-
-        public async Task<List<WarehouseDirectory>> GetAllAsync()
+        public async Task<List<WarehouseResponseDTO>> GetAllAsync()
         {
-            return await _warehouseRepository.GetAllAsync();
+            var warehouses = await _warehouseRepository.GetAllAsync();
+            return warehouses.Select(ToResponse).ToList();
         }
 
-        public async Task<WarehouseDirectory?> GetByIdAsync(Guid Id)
+        public async Task<WarehouseResponseDTO?> GetByIdAsync(Guid id)
         {
-            return await _warehouseRepository.GetByIdAsync(Id);
+            var warehouse = await _warehouseRepository.GetByIdAsync(id);
+            return warehouse is null ? null : ToResponse(warehouse);
         }
 
-        public async Task LoadWarehousesAysnc()
+        public async Task<WarehouseResponseDTO> AddAsync(CreateWarehouseDTO request)
         {
-           warehouseIds.Clear();
-           warehouseBranchIds.Clear();
+            ArgumentNullException.ThrowIfNull(request);
+            var warehouseInput = request.Warehouse
+                ?? throw new ArgumentException("Warehouse details are required.", nameof(request));
+            var branchInput = request.Branch
+                ?? throw new ArgumentException("Branch details are required.", nameof(request));
 
-           var warehouseRecords = await _warehouseRepository.GetAllAsync();
-           var branchRecords = await _warehouseRepository.GetAllBranchesAsync();
-
-           foreach(var warehouse in warehouseRecords)
+            var warehouse = new WarehouseDirectory
             {
-                warehouseIds.Add(warehouse.Id);
-            }
+                Email = warehouseInput.Email
+            };
+            warehouse.PasswordHash = _passwordHasher.HashPassword(warehouse, warehouseInput.Password);
 
-            foreach(var branch in branchRecords)
+            var branch = new WarehouseBranchDirectory
             {
-                warehouseBranchIds.Add(branch.Id);
-            }
+                WarehouseId = warehouse.Id,
+                Location = branchInput.Location
+            };
 
-        }
-
-        public async Task AddAsync(WarehouseDirectory warehouse, WarehouseBranchDirectory branch)
-        {
-            await LoadWarehousesAysnc();
-            // check if the warehouse ID already exists
-            if (warehouseIds.Contains(warehouse.Id) || warehouseBranchIds.Contains(warehouse.Id))
-            {
-                throw new ArgumentException("Duplicate Id found", nameof(warehouseBranchIds));
-            }
-
-            // check if the branch ID already exists
-            if (warehouseIds.Contains(branch.Id) || warehouseBranchIds.Contains(branch.Id))
-            {
-                throw new ArgumentException("Duplicate Id found", nameof(warehouseBranchIds));
-            }
-
-            branch.WarehouseId = warehouse.Id;
-
-            // add IDs if they don't exist
-            warehouseIds.Add(warehouse.Id);
-            warehouseBranchIds.Add(branch.Id);
-
-            // add through repository
             await _warehouseRepository.AddAsync(warehouse, branch);
+            return ToResponse(warehouse);
         }
 
-       public Task<WarehouseDirectory?> UpdateWarehouseAsync(Guid id, UpdateWarehouseDTO dto)
+        public async Task<WarehouseResponseDTO?> UpdateWarehouseAsync(Guid id, UpdateWarehouseDTO dto)
         {
-          ArgumentNullException.ThrowIfNull(dto);
-          return _warehouseRepository.UpdateWarehouseAsync(id, dto);
-        } 
+            ArgumentNullException.ThrowIfNull(dto);
 
-        public async Task<WarehouseBranchDirectory?> UpdateBranchAsync(Guid Id, UpdateWarehouseBranchDTO dto)
-        {
-            await LoadWarehousesAysnc();
+            var warehouse = await _warehouseRepository.GetByIdAsync(id);
+            if (warehouse is null)
+            {
+                return null;
+            }
 
-            // retrieve branch
-            var branchToUpdate = await _warehouseRepository.GetBranchByIdAsync(Id);
-
-            // check if branch exists
-            if (branchToUpdate == null)
-            throw new InvalidOperationException("No Branch to update");
-
-            //update branch details
-            branchToUpdate.Location = dto.UpdatedLocation;
-
-            // save update
-            await _warehouseRepository.UpdateBranchAsync(Id, dto);
-
-            return branchToUpdate;
+            warehouse.Email = dto.UpdatedEmail;
+            warehouse.PasswordHash = _passwordHasher.HashPassword(warehouse, dto.UpdatedPassword);
+            await _warehouseRepository.UpdateWarehouseAsync(warehouse);
+            return ToResponse(warehouse);
         }
 
-       public async Task<WarehouseDirectory?> DeleteWarehouseAsync(Guid Id)
+        public Task<WarehouseBranchDirectory?> UpdateBranchAsync(Guid id, UpdateWarehouseBranchDTO dto)
         {
-            await LoadWarehousesAysnc();
+            ArgumentNullException.ThrowIfNull(dto);
+            return _warehouseRepository.UpdateBranchAsync(id, dto);
+        }
 
-            if (!warehouseIds.Contains(Id))
-            {
-                throw new InvalidOperationException("No Warehouse to delete");
-            }
-            
-            // get branchIds before deletion(calling the method)
-            var branchIds = await _warehouseRepository.GetBranchIdsByWarehouseIdAsync(Id);
-
-            // delete through repository
-            await _warehouseRepository.DeleteWarehouseAsync(Id);
-            
-            warehouseIds.Remove(Id);
-
-            foreach (var branchId in branchIds )
-            {
-                warehouseBranchIds.Remove(branchId);
-            }
-        } 
-
-        public async Task DeleteBranchAsync(Guid Id)
+        public Task<WarehouseDirectory?> DeleteWarehouseAsync(Guid id)
         {
-            await LoadWarehousesAysnc();
+            return _warehouseRepository.DeleteWarehouseAsync(id);
+        }
 
-            // retrieve branch
-            var toDeleteBranch = await _warehouseRepository.GetBranchIdsByWarehouseIdAsync(Id);
+        public Task<WarehouseBranchDirectory?> DeleteBranchAsync(Guid id)
+        {
+            return _warehouseRepository.DeleteBranchAsync(id);
+        }
 
-            // check if branch exists
-            if (toDeleteBranch == null)
-            throw new InvalidOperationException("No Branch to delete");
-
-            // remove branch
-            await _warehouseRepository.DeleteBranchAsync(Id);
-
-            // remove branch from hashset
-            warehouseBranchIds.Remove(Id);
-        } 
-
+        private static WarehouseResponseDTO ToResponse(WarehouseDirectory warehouse)
+            => new(warehouse.Id, warehouse.Email);
     }
 }

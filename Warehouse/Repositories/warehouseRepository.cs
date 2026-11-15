@@ -18,9 +18,6 @@ namespace warehouseRouter.Warehouse.Repositories
         public async Task<List<WarehouseDirectory>> GetAllAsync()
         => await _context.WarehouseDirectory.ToListAsync();
 
-        public async Task<List<WarehouseBranchDirectory>> GetAllBranchesAsync()
-        => await _context.WarehouseBranchDirectory.ToListAsync();
-
         public async Task<WarehouseDirectory?> GetByIdAsync(Guid Id)
         => await _context.WarehouseDirectory.FindAsync(Id);
 
@@ -37,57 +34,55 @@ namespace warehouseRouter.Warehouse.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<WarehouseDirectory?> UpdateWarehouseAsync(Guid id, UpdateWarehouseDTO dto)
+        public async Task UpdateWarehouseAsync(WarehouseDirectory warehouse)
         {
-           ArgumentNullException.ThrowIfNull(dto);
+            _context.WarehouseDirectory.Update(warehouse);
+            await _context.SaveChangesAsync();
+        }
 
-           var warehouse = await _context.WarehouseDirectory.FindAsync(id);
-           if(warehouse == null)
-           {
+        public async Task<WarehouseBranchDirectory?> UpdateBranchAsync(Guid id, UpdateWarehouseBranchDTO dto)
+        {
+            ArgumentNullException.ThrowIfNull(dto);
+
+            var branch = await _context.WarehouseBranchDirectory.FindAsync(id);
+            if (branch == null)
+            {
                 return null;
-           }
+            }
 
-            warehouse.Email = dto.UpdatedEmail;
-            warehouse.PasswordHash = dto.UpdatedPasswordHash;
+            branch.Location = dto.UpdatedLocation;
+            await _context.SaveChangesAsync();
+            return branch;
+        }
+
+        public async Task<WarehouseDirectory?> DeleteWarehouseAsync(Guid Id)
+        {
+            var warehouse = await _context.WarehouseDirectory.FindAsync(Id);
+
+            if (warehouse == null)
+            {
+                return null;
+            }
+
+            var branches = await _context.WarehouseBranchDirectory.Where(branch => branch.WarehouseId == Id).ToListAsync();
+
+            _context.WarehouseBranchDirectory.RemoveRange(branches);
+            _context.WarehouseDirectory.Remove(warehouse);
             await _context.SaveChangesAsync();
             return warehouse;
         }
 
-        public async Task UpdateBranchAsync(Guid Id, UpdateWarehouseBranchDTO dto)
+        public async Task<WarehouseBranchDirectory?> DeleteBranchAsync(Guid Id)
         {
-            
-        }
+           var branch = await _context.WarehouseBranchDirectory.FindAsync(Id);
+           if (branch == null)
+            {
+                return null;
+            }
 
-        public async Task DeleteWarehouseAsync(Guid Id)
-        {
-            var toDelete = await _context.WarehouseDirectory.FindAsync(Id);
-            var toDeleteBranch = await _context.WarehouseBranchDirectory.Where(branch => branch.WarehouseId == Id).ToListAsync();
-
-            if (toDelete == null)
-                throw new InvalidOperationException("No warehouse to delete");
-            //remove warehouse and branches
-            _context.WarehouseDirectory.Remove(toDelete);
-            _context.WarehouseBranchDirectory.RemoveRange(toDeleteBranch);
-
-            //save deletion 
+            _context.WarehouseBranchDirectory.Remove(branch);
             await _context.SaveChangesAsync();
-        }
-
-        public async Task<List<Guid>> GetBranchIdsByWarehouseIdAsync(Guid Id)
-        {
-            return await _context.WarehouseBranchDirectory.Where(branch => branch.WarehouseId == Id).Select(branch => branch.Id).ToListAsync();
-        }
-
-        public async Task DeleteBranchAsync(Guid Id)
-        {
-            var toDeleteBranch = await _context.WarehouseBranchDirectory.Where(branch => branch.WarehouseId == Id).ToListAsync();
-
-            if (toDeleteBranch == null)
-                throw new InvalidOperationException("No Branch to delete");
-
-            _context.WarehouseBranchDirectory.RemoveRange(toDeleteBranch);
-
-            await _context.SaveChangesAsync();    
+            return branch;
         }
 
     }

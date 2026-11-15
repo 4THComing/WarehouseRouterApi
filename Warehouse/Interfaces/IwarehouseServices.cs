@@ -6,11 +6,11 @@ namespace warehouseRouter.Warehouse.Interfaces
 {
     public interface IwarehouseServices
     {
-        Task<List<WarehouseDirectory>> GetAllAsync();
-        Task<List<WarehouseDirectory?>> GetByIdAsync(Guid Id);
-        Task AddAsync(WarehouseDirectory warehouse, WarehouseBranchDirectory branch);
+        Task<List<WarehouseResponseDTO>> GetAllAsync();
+        Task<WarehouseResponseDTO?> GetByIdAsync(Guid Id);
+        Task<WarehouseResponseDTO> AddAsync(CreateWarehouseDTO request);
 
-        Task<WarehouseDirectory?> UpdateWarehouseAsync(Guid Id, UpdateWarehouseDTO dto);
+        Task<WarehouseResponseDTO?> UpdateWarehouseAsync(Guid Id, UpdateWarehouseDTO dto);
 
         Task<WarehouseBranchDirectory?> UpdateBranchAsync(Guid Id, UpdateWarehouseBranchDTO dto);
 

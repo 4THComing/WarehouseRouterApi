@@ -4,11 +4,11 @@ namespace warehouseRouter.Warehouse.DTOs
 {
     public class UpdateWarehouseDTO
     {
-        [Required]
+        [Required, EmailAddress, MaxLength(254)]
         public string UpdatedEmail {get; set;} = string.Empty;
 
-        [Required]
-        public string UpdatedPasswordHash { get; set; } = string.Empty;
+        [Required, MinLength(12), MaxLength(128)]
+        public string UpdatedPassword { get; set; } = string.Empty;
     }
 
     public class UpdateWarehouseBranchDTO
@@ -17,4 +17,5 @@ namespace warehouseRouter.Warehouse.DTOs
         public string UpdatedLocation { get; set; } = string.Empty;
     }
 
+    public sealed record WarehouseResponseDTO(Guid Id, string Email);
 }

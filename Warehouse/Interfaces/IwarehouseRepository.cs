@@ -7,8 +7,6 @@ namespace warehouseRouter.Warehouse.Interfaces
     {
         Task<List<WarehouseDirectory>> GetAllAsync();
 
-        Task<List<WarehouseBranchDirectory>> GetAllBranchesAsync();
-
         Task<WarehouseDirectory?> GetByIdAsync(Guid Id);
 
         Task<WarehouseBranchDirectory?> GetBranchByIdAsync(Guid Id);
@@ -17,15 +15,13 @@ namespace warehouseRouter.Warehouse.Interfaces
 
         Task AddAsync(WarehouseDirectory warehouse, WarehouseBranchDirectory branch);
 
-        Task<WarehouseDirectory?> UpdateWarehouseAsync(Guid id, UpdateWarehouseDTO dto);
+        Task UpdateWarehouseAsync(WarehouseDirectory warehouse);
 
-        Task UpdateBranchAsync(Guid Id, UpdateWarehouseBranchDTO dto);
+        Task<WarehouseBranchDirectory?> UpdateBranchAsync(Guid id, UpdateWarehouseBranchDTO dto);
 
-        Task DeleteWarehouseAsync(Guid Id);
+        Task<WarehouseDirectory?> DeleteWarehouseAsync(Guid Id);
 
-        Task<List<Guid>> GetBranchIdsByWarehouseIdAsync(Guid Id);
-
-        Task DeleteBranchAsync(Guid Id);
+        Task<WarehouseBranchDirectory?> DeleteBranchAsync(Guid Id);
 
     }
 }
