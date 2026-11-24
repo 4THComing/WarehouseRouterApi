@@ -5,7 +5,7 @@ using warehouseRouter.Warehouse.Interfaces;
 
 namespace warehouseRouter.Warehouse.Services
 {
-    public class WarehouseService : IwarehouseServices
+    public class WarehouseService : IWarehouseServices
     {
         private readonly IWarehouseRepository _warehouseRepository;
         private readonly IPasswordHasher<WarehouseDirectory> _passwordHasher;
@@ -42,7 +42,7 @@ namespace warehouseRouter.Warehouse.Services
             {
                 Email = warehouseInput.Email
             };
-            warehouse.PasswordHash = _passwordHasher.HashPassword(warehouse, warehouseInput.Password);
+            warehouse.Password = _passwordHasher.HashPassword(warehouse, warehouseInput.Password);
 
             var branch = new WarehouseBranchDirectory
             {
@@ -65,26 +65,26 @@ namespace warehouseRouter.Warehouse.Services
             }
 
             warehouse.Email = dto.UpdatedEmail;
-            warehouse.PasswordHash = _passwordHasher.HashPassword(warehouse, dto.UpdatedPassword);
+            warehouse.Password = _passwordHasher.HashPassword(warehouse, dto.UpdatedPassword);
             await _warehouseRepository.UpdateWarehouseAsync(warehouse);
             return ToResponse(warehouse);
         }
 
-        public Task<WarehouseBranchDirectory?> UpdateBranchAsync(Guid id, UpdateWarehouseBranchDTO dto)
+        public async Task<WarehouseBranchResponseDTO?> UpdateBranchAsync(Guid id, UpdateWarehouseBranchDTO dto)
         {
             ArgumentNullException.ThrowIfNull(dto);
-            return _warehouseRepository.UpdateBranchAsync(id, dto);
+            var branch = await _warehouseRepository.UpdateBranchAsync(id, dto);
+            return branch is null ? null : ToResponse(branch);
         }
 
-        public Task<WarehouseDirectory?> DeleteWarehouseAsync(Guid id)
-        {
-            return _warehouseRepository.DeleteWarehouseAsync(id);
-        }
+        private static WarehouseBranchResponseDTO ToResponse(WarehouseBranchDirectory branch)
+        => new(branch.Id, branch.WarehouseId, branch.Location);
 
-        public Task<WarehouseBranchDirectory?> DeleteBranchAsync(Guid id)
-        {
-            return _warehouseRepository.DeleteBranchAsync(id);
-        }
+        public async Task<bool> DeleteWarehouseAsync(Guid id)
+        => await _warehouseRepository.DeleteWarehouseAsync(id) is not null;
+
+        public async Task<bool> DeleteBranchAsync(Guid id)
+        => await _warehouseRepository.DeleteBranchAsync(id) is not null;
 
         private static WarehouseResponseDTO ToResponse(WarehouseDirectory warehouse)
             => new(warehouse.Id, warehouse.Email);

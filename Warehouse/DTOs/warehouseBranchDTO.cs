@@ -3,10 +3,13 @@ using System.ComponentModel.DataAnnotations;
 namespace warehouseRouter.Warehouse.DTOs
 
 {
-    public class WarehouseBranchDTO
+    /// <summary>
+    /// branch details supplied when creating a branch
+    /// </summary>
+    public sealed record WarehouseBranchDTO
     {
         [Required]
-        public string Location { get; set; } = string.Empty;
+        public string Location { get; init; } = string.Empty;
     }
 }
 

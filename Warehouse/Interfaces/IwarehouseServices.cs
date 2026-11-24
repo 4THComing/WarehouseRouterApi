@@ -1,10 +1,8 @@
-using warehouseRouter.Warehouse.Models;
 using warehouseRouter.Warehouse.DTOs;
-
 
 namespace warehouseRouter.Warehouse.Interfaces
 {
-    public interface IwarehouseServices
+    public interface IWarehouseServices
     {
         Task<List<WarehouseResponseDTO>> GetAllAsync();
         Task<WarehouseResponseDTO?> GetByIdAsync(Guid Id);
@@ -12,10 +10,10 @@ namespace warehouseRouter.Warehouse.Interfaces
 
         Task<WarehouseResponseDTO?> UpdateWarehouseAsync(Guid Id, UpdateWarehouseDTO dto);
 
-        Task<WarehouseBranchDirectory?> UpdateBranchAsync(Guid Id, UpdateWarehouseBranchDTO dto);
+        Task<WarehouseBranchResponseDTO?> UpdateBranchAsync(Guid Id, UpdateWarehouseBranchDTO dto);
 
-        Task<WarehouseDirectory?> DeleteWarehouseAsync(Guid Id);
+        Task<bool> DeleteWarehouseAsync(Guid Id);
 
-        Task<WarehouseBranchDirectory?> DeleteBranchAsync(Guid Id);
+        Task<bool> DeleteBranchAsync(Guid Id);
     }
 }

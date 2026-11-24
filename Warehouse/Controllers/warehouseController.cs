@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using warehouseRouter.Warehouse.Interfaces;
-using warehouseRouter.Warehouse.Models;
 using warehouseRouter.Warehouse.DTOs;
 
 namespace warehouseRouter.Warehouse.Controllers
@@ -10,9 +9,9 @@ namespace warehouseRouter.Warehouse.Controllers
 
     public class WarehouseController : ControllerBase
     {
-        private readonly IwarehouseServices _warehouseService;
+        private readonly IWarehouseServices _warehouseService;
 
-        public WarehouseController(IwarehouseServices warehouseService)
+        public WarehouseController(IWarehouseServices warehouseService)
         {
             _warehouseService = warehouseService;
         }
@@ -66,7 +65,7 @@ namespace warehouseRouter.Warehouse.Controllers
         }
 
         [HttpPut("branches/{Id}")]
-        public async Task<ActionResult<WarehouseBranchDirectory>> UpdateBranchAsync(Guid Id, UpdateWarehouseBranchDTO branchUpdate)
+        public async Task<ActionResult<WarehouseBranchResponseDTO>> UpdateBranchAsync(Guid Id, UpdateWarehouseBranchDTO branchUpdate)
         {
             if (branchUpdate == null)
                 return BadRequest();
@@ -79,14 +78,10 @@ namespace warehouseRouter.Warehouse.Controllers
         }
 
         [HttpDelete("warehouse/{Id:guid}")]
-        public async Task<ActionResult<WarehouseDirectory>> DeleteWarehouseAsync(Guid Id)
+        public async Task<IActionResult> DeleteWarehouseAsync(Guid Id)
         {
-            if (Id == Guid.Empty)
-            {
-                return BadRequest("Invalid Id");
-            }
-            var warehouse = await _warehouseService.DeleteWarehouseAsync(Id);
-            if (warehouse == null)
+            var deleted = await _warehouseService.DeleteWarehouseAsync(Id);
+            if (!deleted)
             {
                 return NotFound();
             }
@@ -95,14 +90,11 @@ namespace warehouseRouter.Warehouse.Controllers
         }
 
         [HttpDelete("branches/{Id:guid}")]
-        public async Task<ActionResult<WarehouseBranchDirectory>> DeleteBranchAsync(Guid Id)
+        public async Task<IActionResult> DeleteBranchAsync(Guid Id)
         {
-            if (Id == Guid.Empty)
-            {
-                return BadRequest("Invalid Id");
-            }
-            var branch = await _warehouseService.DeleteBranchAsync(Id);
-            if (branch == null)
+          
+            var deleted = await _warehouseService.DeleteBranchAsync(Id);
+            if (!deleted)
             {
                 return NotFound();
             }

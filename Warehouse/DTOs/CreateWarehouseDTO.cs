@@ -2,12 +2,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace warehouseRouter.Warehouse.DTOs
 {
-    public class CreateWarehouseDTO
+    /// <summary>
+    /// payload for creating a warehouse and its initial branch
+    /// </summary>
+    public sealed record CreateWarehouseDTO
     {
         [Required]
-        public WarehouseDTO? Warehouse { get; set; }
+        public WarehouseDTO? Warehouse { get; init; }
 
         [Required]
-        public WarehouseBranchDTO? Branch { get; set; } 
+        public WarehouseBranchDTO? Branch { get; init; }
     }
 }

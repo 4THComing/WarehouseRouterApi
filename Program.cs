@@ -17,7 +17,7 @@ builder.Services.AddCors(opt => opt.AddDefaultPolicy(p => p.AllowAnyOrigin().All
 builder.Services.AddDbContext<WarehouseDbContext>(opt => 
     opt.UseInMemoryDatabase("warehouseDbContext"));
     builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
-    builder.Services.AddScoped<IwarehouseServices, WarehouseService>();
+    builder.Services.AddScoped<IWarehouseServices, WarehouseService>();
 builder.Services.AddScoped<IPasswordHasher<WarehouseDirectory>, PasswordHasher<WarehouseDirectory>>();
 
 var app = builder.Build();
